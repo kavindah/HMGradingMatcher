@@ -21,7 +21,7 @@ from openpyxl.utils import get_column_letter
 
 SIZE_RE = re.compile(r"^(2XS|XS|S|M|L|XL|2XL|3XL|4XL|5XL)(?:-(S|T|TT))?$")
 CODE_RE = re.compile(r"^[A-Z][A-Z0-9]*(_[A-Z0-9]+)*$")
-STD_RUN = ["2XS","XS","S","M","L","XL","2XL","3XL","4XL"]
+STD_RUN = ["XXS","2XS","XS","S","M","L","XL","2XL","3XL","4XL"]
 
 
 def norm(t): return re.sub(r"\s+"," ",(t or "")).strip()
@@ -32,8 +32,8 @@ def classify(header):
     for i,c in enumerate(header):
         c=norm(c); cl=c.lower()
         if not c: continue
-        if cl.startswith("meas. code") or cl.startswith("meas.code"): roles["code"]=i
-        elif "point of measurement" in cl: roles["name"]=i
+        if cl.startswith("meas. code") or cl.startswith("meas.code") or cl=="code": roles["code"]=i
+        elif "point of measurement" in cl or cl=="pom": roles["name"]=i
         elif SIZE_RE.match(c): sizes[i]=c
     return roles,sizes
 
@@ -66,7 +66,7 @@ def extract(source):
                             for k in ("sample","grade"):
                                 if k in info and k not in meta: meta[k]=info[k]
                         continue
-                    if f.startswith("meas. code") or f.startswith("meas.code"):
+                    if f.startswith("meas. code") or f.startswith("meas.code") or f=="code":
                         roles,sizes=classify(row); continue
                     if "code" not in roles or not sizes: continue
                     code=re.sub(r"[\s*]+","",row[roles["code"]] or "")
